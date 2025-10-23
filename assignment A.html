@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="quadraticForm">
+        <label>
+            a:
+            <input type="number" name="a" step="any" required>
+        </label>
+        <label>
+            b:
+            <input type="number" name="b" step="any" required>
+        </label>
+        <label>
+            c:
+            <input type="number" name="c" step="any" required>
+        </label>
+        <button type="submit">Solve</button>
+    </form>
+
+    <div id="result" aria-live="polite" style="margin-top:1em"></div>
+
+    <script>
+    (function(){
+        const form = document.getElementById('quadraticForm');
+        const out = document.getElementById('result');
+
+        function fmt(n){
+            if (!isFinite(n)) return String(n);
+            // trim insignificant zeros
+            return parseFloat(n.toFixed(6)).toString();
+        }
+
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const a = parseFloat(form.a.value);
+            const b = parseFloat(form.b.value);
+            const c = parseFloat(form.c.value);
+
+            if (Number.isNaN(a) || Number.isNaN(b) || Number.isNaN(c)) {
+                out.textContent = 'Please enter valid numbers for a, b and c.';
+                return;
+            }
+            if (a === 0) {
+                out.textContent = 'Coefficient a must be non-zero for a quadratic equation.';
+                return;
+            }
+
+            const disc = b * b - 4 * a * c;
+            if (disc > 0) {
+                const r1 = (-b + Math.sqrt(disc)) / (2 * a);
+                const r2 = (-b - Math.sqrt(disc)) / (2 * a);
+                out.innerHTML = `Two real roots: <strong>${fmt(r1)}</strong> and <strong>${fmt(r2)}</strong>`;
+            } else if (disc === 0) {
+                const r = -b / (2 * a);
+                out.innerHTML = `One real root: <strong>${fmt(r)}</strong>`;
+            } else {
+                const real = -b / (2 * a);
+                const imag = Math.sqrt(-disc) / (2 * a);
+                out.innerHTML = `Two complex roots: <strong>${fmt(real)} ± ${fmt(imag)}i</strong>`;
+            }
+        });
+    })();
+    </script>
+    <script>
+    function solveQuadratic(a, b, c) {
+        a = Number(a); b = Number(b); c = Number(c);
+        if ([a, b, c].some(Number.isNaN)) return { error: 'invalid input' };
+
+        if (a === 0) {
+            if (b === 0) {
+                return { type: 'degenerate', message: c === 0 ? 'all real numbers' : 'no solution' };
+            }
+            return { type: 'linear', root: -c / b };
+        }
+
+        const disc = b * b - 4 * a * c;
+        if (disc > 0) {
+            const r1 = (-b + Math.sqrt(disc)) / (2 * a);
+            const r2 = (-b - Math.sqrt(disc)) / (2 * a);
+            return { type: 'twoReal', roots: [r1, r2], discriminant: disc };
+        } else if (disc === 0) {
+            const r = -b / (2 * a);
+            return { type: 'oneReal', roots: [r], discriminant: disc };
+        } else {
+            const real = -b / (2 * a);
+            const imag = Math.sqrt(-disc) / (2 * a);
+            return {
+                type: 'twoComplex',
+                roots: [{ re: real, im: imag }, { re: real, im: -imag }],
+                discriminant: disc
+            };
+        
+    }
+    </script>
+    <script>
+        (function(){
+            function scoreToLetter(score) {
+                score = Number(score);
+                if (!Number.isFinite(score) || score < 0 || score > 100) return 'Invalid';
+                if (score >= 85) return 'A+';
+                if (score >= 75) return 'A';
+                if (score >= 65) return 'B+';
+                if (score >= 60) return 'B';
+                if (score >= 55) return 'C+';
+                if (score >= 50) return 'C';
+                return 'D';
+            }
+
+            // expose for console/other scripts
+            window.scoreToLetter = scoreToLetter;
+
+            // optional: if you add elements with these IDs, they will be connected automatically
+            const input = document.getElementById('scoreInput');
+            const out = document.getElementById('scoreResult');
+            if (input && out) {
+                input.addEventListener('input', () => { out.textContent = scoreToLetter(input.value); });
+            }
+        })();
+</body>
+</html>
